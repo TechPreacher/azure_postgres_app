@@ -398,3 +398,30 @@ FodyWeavers.xsd
 
 # JetBrains Rider
 *.sln.iml
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+.venv/
+venv/
+ENV/
+
+# Poetry
+.poetry/
+dist/
+
+# Environment variables
+.env
+
+# IDE files
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS specific files
+.DS_Store
+Thumbs.db

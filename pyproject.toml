@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "azure-postgres-app"
+version = "0.1.0"
+description = "Azure PostgreSQL Python Application"
+authors = ["Sascha Corti <sascha@corti.com>"]
+readme = "README.md"
+packages = []
+
+[tool.poetry.dependencies]
+python = ">=3.9,<3.9.7 || >3.9.7,<4.0"
+sqlalchemy = "^2.0.23"
+psycopg2-binary = "^2.9.6"  # Still needed as SQLAlchemy's PostgreSQL driver
+python-dotenv = "^1.0.0"
+azure-identity = "^1.13.0"
+streamlit = "^1.44.1"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
