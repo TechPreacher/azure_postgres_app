@@ -10,7 +10,7 @@ import os
 import sys
 from enum import Enum
 from pathlib import Path
-from typing import Dict
+from typing import Dict, Optional
 from dotenv import load_dotenv
 
 # SQLAlchemy imports
@@ -28,7 +28,9 @@ from sqlalchemy import (
     func,
     text,
 )
-from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.dialects.postgresql import UUID
+import uuid
+from sqlalchemy.orm import declarative_base
 from sqlalchemy.orm import sessionmaker, relationship
 
 
@@ -71,7 +73,7 @@ Base = declarative_base()
 class Product(Base):
     __tablename__ = "products"
 
-    id = Column(Integer, primary_key=True)
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     name = Column(String(100), nullable=False)
     category = Column(String(50), nullable=False)
     price = Column(Float(precision=10, decimal_return_scale=2), nullable=False)
@@ -81,7 +83,7 @@ class Product(Base):
     # Relationship with Order model
     orders = relationship("Order", back_populates="product")
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return (f"<Product(id={self.id}, name='{self.name}', "
                 f"category='{self.category}', price={self.price})>")
 
@@ -89,15 +91,15 @@ class Product(Base):
 class Order(Base):
     __tablename__ = "orders"
 
-    id = Column(Integer, primary_key=True)
-    product_id = Column(Integer, ForeignKey("products.id"))
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    product_id = Column(UUID(as_uuid=True), ForeignKey("products.id"))
     quantity = Column(Integer, nullable=False)
     order_date = Column(DateTime, server_default=func.now())
 
     # Relationship with Product model
     product = relationship("Product", back_populates="orders")
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"<Order(id={self.id}, product_id={self.product_id}, \
 quantity={self.quantity})>"
 
@@ -148,13 +150,21 @@ def check_env_vars(db_type: DatabaseType) -> bool:
     return True
 
 
-def connect_to_database(config: Dict[str, str], db_type_desc: str) -> Engine:
+def connect_to_database(config: Dict[str, Optional[str]], db_type_desc: str) -> Engine:
     """Connect to the Azure PostgreSQL database using SQLAlchemy."""
     try:
+        # Make sure all required values are present
+        user = config.get('user')
+        password = config.get('password')
+        host = config.get('host')
+        database = config.get('database')
+        sslmode = config.get('sslmode', 'require')
+        if not all([user, password, host, database]):
+            raise ValueError("Missing required database connection parameters")
         # Create the connection string
         connection_string = (
-            f"postgresql+psycopg2://{config['user']}:{config['password']}@"
-            f"{config['host']}/{config['database']}?sslmode={config['sslmode']}"
+            f"postgresql+psycopg2://{user}:{password}@"
+            f"{host}/{database}?sslmode={sslmode}"
         )
 
         print(f"Connecting to {db_type_desc} database at {config['host']}...")
@@ -261,7 +271,7 @@ def load_sample_data(engine: Engine, is_primary: bool) -> None:
         # Insert products
         for product_data in products_data:
             product = Product(
-                id=product_data["id"],
+                id=uuid.UUID(product_data["id"]),
                 name=product_data["name"],
                 category=product_data["category"],
                 price=product_data["price"],
@@ -299,7 +309,7 @@ def query_data(engine: Engine) -> None:
 
         # Query 1: All products
         print("\nAll Products:")
-        products = session.query(Product).order_by(Product.id).all()
+        products = session.query(Product).order_by(Product.created_at).all()
         for product in products:
             print(
                 f"ID: {product.id}, Name: {product.name}, "

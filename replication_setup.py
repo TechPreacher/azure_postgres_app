@@ -14,6 +14,9 @@ from dotenv import load_dotenv
 # SQLAlchemy imports
 from sqlalchemy import create_engine, text
 from sqlalchemy.engine import Engine
+# For potential future use with UUID fields
+# from sqlalchemy.dialects.postgresql import UUID
+# import uuid
 
 # Load environment variables from .env file if it exists
 env_path = Path(__file__).parent / ".env"

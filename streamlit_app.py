@@ -11,7 +11,7 @@ import os
 from pathlib import Path
 from dotenv import load_dotenv
 import pandas as pd
-from typing import Any
+from typing import Any, Dict, List, Optional
 
 # SQLAlchemy imports
 from sqlalchemy import (
@@ -26,8 +26,9 @@ from sqlalchemy import (
     ForeignKey,
     func,
 )
-from sqlalchemy.orm import declarative_base
-from sqlalchemy.orm import sessionmaker, relationship
+from sqlalchemy.dialects.postgresql import UUID
+import uuid
+from sqlalchemy.orm import declarative_base, sessionmaker, relationship
 from sqlalchemy.sql import desc
 
 # Load environment variables from .env file if it exists
@@ -57,7 +58,7 @@ Base = declarative_base()
 class Product(Base):
     __tablename__ = "products"
 
-    id = Column(Integer, primary_key=True)
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     name = Column(String(100), nullable=False)
     category = Column(String(50), nullable=False)
     price = Column(Float(precision=10, decimal_return_scale=2), nullable=False)
@@ -67,7 +68,7 @@ class Product(Base):
     # Relationship with Order model
     orders = relationship("Order", back_populates="product")
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return (f"<Product(id={self.id}, name='{self.name}', "
                 f"category='{self.category}', price={self.price})>")
 
@@ -75,15 +76,15 @@ class Product(Base):
 class Order(Base):
     __tablename__ = "orders"
 
-    id = Column(Integer, primary_key=True)
-    product_id = Column(Integer, ForeignKey("products.id"))
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    product_id = Column(UUID(as_uuid=True), ForeignKey("products.id"))
     quantity = Column(Integer, nullable=False)
     order_date = Column(DateTime, server_default=func.now())
 
     # Relationship with Product model
     product = relationship("Product", back_populates="orders")
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return (f"<Order(id={self.id}, product_id={self.product_id}, "
                 f"quantity={self.quantity})>")
 
@@ -132,7 +133,7 @@ def init_connection() -> Engine:
 
 
 @st.cache_data(ttl=5)
-def get_products() -> list:
+def get_products() -> List[Dict[str, Any]]:
     """Fetch all products from the database using SQLAlchemy."""
     engine = init_connection()
     Session = sessionmaker(bind=engine)
@@ -140,14 +141,14 @@ def get_products() -> list:
 
     try:
         # Query all products and order by id
-        products = session.query(Product).order_by(Product.id).all()
+        products = session.query(Product).order_by(Product.created_at).all()
 
         # Convert SQLAlchemy objects to dictionaries
         products_list = []
         for product in products:
             products_list.append(
                 {
-                    "id": product.id,
+                    "id": str(product.id),
                     "name": product.name,
                     "category": product.category,
                     "price": product.price,
@@ -164,7 +165,7 @@ def get_products() -> list:
 
 
 @st.cache_data(ttl=5)
-def get_product_by_id(product_id) -> dict[str, Any] | None:
+def get_product_by_id(product_id: str) -> Optional[Dict[str, Any]]:
     """Fetch a specific product by ID using SQLAlchemy."""
     engine = init_connection()
     Session = sessionmaker(bind=engine)
@@ -177,7 +178,7 @@ def get_product_by_id(product_id) -> dict[str, Any] | None:
         if product:
             # Convert SQLAlchemy object to dictionary
             product_dict = {
-                "id": product.id,
+                "id": str(product.id),
                 "name": product.name,
                 "category": product.category,
                 "price": product.price,
@@ -195,7 +196,7 @@ def get_product_by_id(product_id) -> dict[str, Any] | None:
         return None
 
 
-def create_order(product_id, quantity) -> dict[str, Any] | None:
+def create_order(product_id: str, quantity: int) -> Optional[Dict[str, Any]]:
     """Create a new order in the database using SQLAlchemy."""
     engine = init_connection()
     Session = sessionmaker(bind=engine)
@@ -216,8 +217,8 @@ def create_order(product_id, quantity) -> dict[str, Any] | None:
 
         # Convert to dictionary for consistent return format
         order_dict = {
-            "id": new_order.id,
-            "product_id": new_order.product_id,
+            "id": str(new_order.id),
+            "product_id": str(new_order.product_id),
             "quantity": new_order.quantity,
             "order_date": new_order.order_date,
         }
@@ -232,7 +233,7 @@ def create_order(product_id, quantity) -> dict[str, Any] | None:
 
 
 @st.cache_data(ttl=5)
-def get_orders() -> list:
+def get_orders() -> List[Dict[str, Any]]:
     """Fetch all orders with product details using SQLAlchemy."""
     engine = init_connection()
     Session = sessionmaker(bind=engine)
@@ -260,10 +261,10 @@ def get_orders() -> list:
         for order in orders:
             orders_list.append(
                 {
-                    "id": order.id,
+                    "id": str(order.id),
                     "quantity": order.quantity,
                     "order_date": order.order_date,
-                    "product_id": order.product_id,
+                    "product_id": str(order.product_id),
                     "product_name": order.product_name,
                     "price": order.price,
                     "total_price": order.total_price,
@@ -320,7 +321,7 @@ def order_creation_view() -> None:
 
     # Create a dropdown to select product
     product_options = {
-        f"{p['id']}: {p['name']} (${float(p['price']):.2f})": p["id"]
+        f"{p['name']} (${float(p['price']):.2f})": p["id"]
         for p in products
         if p["in_stock"]
     }
@@ -351,14 +352,13 @@ def order_creation_view() -> None:
 
     # Submit order button
     if st.button("Place Order"):
-        if not product["in_stock"]:
+        if product and not product["in_stock"]:
             st.error("This product is out of stock!")
-        else:
+        elif product:
             order = create_order(selected_product_id, quantity)
             if order:
-                st.success(f"Order #{order['id']} created successfully!")
-                # Clear cache to refresh orders list
-                get_orders.clear()
+                st.success("Order created successfully!")
+                # Rerun to refresh the UI
                 st.rerun()
 
 
