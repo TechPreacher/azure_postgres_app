@@ -38,7 +38,7 @@ PRIMARY_DB_CONFIG = {
     'host': os.environ.get('AZURE_POSTGRES_PRIMARY_HOST'),
     'user': os.environ.get('AZURE_POSTGRES_PRIMARY_USER'),
     'password': os.environ.get('AZURE_POSTGRES_PRIMARY_PASSWORD'),
-    'database': os.environ.get('AZURE_POSTGRES_PRIMARY_DB', 'products'),
+    'database': os.environ.get('AZURE_POSTGRES_PRIMARY_DB'),
     'sslmode': os.environ.get('AZURE_POSTGRES_SSL_MODE', 'require')
 }
 
@@ -46,7 +46,7 @@ REPLICA_DB_CONFIG = {
     'host': os.environ.get('AZURE_POSTGRES_REPLICA_HOST'),
     'user': os.environ.get('AZURE_POSTGRES_REPLICA_USER'),
     'password': os.environ.get('AZURE_POSTGRES_REPLICA_PASSWORD'),
-    'database': os.environ.get('AZURE_POSTGRES_REPLICA_DB', 'sales'),
+    'database': os.environ.get('AZURE_POSTGRES_REPLICA_DB'),
     'sslmode': os.environ.get('AZURE_POSTGRES_SSL_MODE', 'require')
 }
 
