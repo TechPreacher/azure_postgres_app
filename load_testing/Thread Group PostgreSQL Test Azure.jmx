@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jmeterTestPlan version="1.2" properties="5.0" jmeter="5.6.3">
+  <hashTree>
+    <TestPlan guiclass="TestPlanGui" testclass="TestPlan" testname="PostgreSQL Test Plan">
+      <boolProp name="TestPlan.tearDown_on_shutdown">true</boolProp>
+      <elementProp name="TestPlan.user_defined_variables" elementType="Arguments" guiclass="ArgumentsPanel" testclass="Arguments" testname="User Defined Variables">
+        <collectionProp name="Arguments.arguments"/>
+      </elementProp>
+      <stringProp name="TestPlan.user_define_classpath">C:\Users\sascha\Code\apache-jmeter-5.6.3\lib\postgresql-42.7.5.jar</stringProp>
+    </TestPlan>
+    <hashTree>
+      <Arguments guiclass="ArgumentsPanel" testclass="Arguments" testname="User Defined Variables">
+        <collectionProp name="Arguments.arguments">
+          <elementProp name="mainuser" elementType="Argument">
+            <stringProp name="Argument.name">mainuser</stringProp>
+            <stringProp name="Argument.value">${__GetSecret(mainuser)}</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="mainpassword" elementType="Argument">
+            <stringProp name="Argument.name">mainpassword</stringProp>
+            <stringProp name="Argument.value">${__GetSecret(mainpassword)}</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="replicauser" elementType="Argument">
+            <stringProp name="Argument.name">replicauser</stringProp>
+            <stringProp name="Argument.value">${__GetSecret(replicauser)}</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="replicapassword" elementType="Argument">
+            <stringProp name="Argument.name">replicapassword</stringProp>
+            <stringProp name="Argument.value">${__GetSecret(replicapassword)}</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="main_threads" elementType="Argument">
+            <stringProp name="Argument.name">main_threads</stringProp>
+            <stringProp name="Argument.value">${__BeanShell(System.getenv(&quot;main_threads&quot;))}</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="main_loops" elementType="Argument">
+            <stringProp name="Argument.name">main_loops</stringProp>
+            <stringProp name="Argument.value">${__BeanShell(System.getenv(&quot;main_loops&quot;))}</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="main_database" elementType="Argument">
+            <stringProp name="Argument.name">main_database</stringProp>
+            <stringProp name="Argument.value">${__BeanShell(System.getenv(&quot;main_database&quot;))}</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="replica_threads" elementType="Argument">
+            <stringProp name="Argument.name">replica_threads</stringProp>
+            <stringProp name="Argument.value">${__BeanShell(System.getenv(&quot;replica_threads&quot;))}</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="replica_loops" elementType="Argument">
+            <stringProp name="Argument.name">replica_loops</stringProp>
+            <stringProp name="Argument.value">${__BeanShell(System.getenv(&quot;replica_loops&quot;))}</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="replica_database" elementType="Argument">
+            <stringProp name="Argument.name">replica_database</stringProp>
+            <stringProp name="Argument.value">${__BeanShell(System.getenv(&quot;replica_database&quot;))}</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+        </collectionProp>
+      </Arguments>
+      <hashTree/>
+      <JDBCDataSource guiclass="TestBeanGUI" testclass="JDBCDataSource" testname="PostgreSQL JDBC Connection Main">
+        <boolProp name="autocommit">true</boolProp>
+        <stringProp name="checkQuery">select 1</stringProp>
+        <stringProp name="connectionAge">5000</stringProp>
+        <stringProp name="connectionProperties"></stringProp>
+        <stringProp name="dataSource">primary_db</stringProp>
+        <stringProp name="dbUrl">${main_database}</stringProp>
+        <stringProp name="driver">org.postgresql.Driver</stringProp>
+        <stringProp name="initQuery"></stringProp>
+        <boolProp name="keepAlive">true</boolProp>
+        <stringProp name="password">${mainpassword}</stringProp>
+        <stringProp name="poolMax">100</stringProp>
+        <boolProp name="preinit">false</boolProp>
+        <stringProp name="timeout">10000</stringProp>
+        <stringProp name="transactionIsolation">DEFAULT</stringProp>
+        <stringProp name="trimInterval">60000</stringProp>
+        <stringProp name="username">${mainuser}</stringProp>
+      </JDBCDataSource>
+      <hashTree/>
+      <JDBCDataSource guiclass="TestBeanGUI" testclass="JDBCDataSource" testname="JDBC Connection Configuration Replica">
+        <stringProp name="dataSource">replica_db</stringProp>
+        <stringProp name="poolMax">100</stringProp>
+        <stringProp name="timeout">10000</stringProp>
+        <stringProp name="trimInterval">60000</stringProp>
+        <boolProp name="autocommit">true</boolProp>
+        <stringProp name="transactionIsolation">DEFAULT</stringProp>
+        <boolProp name="preinit">false</boolProp>
+        <stringProp name="initQuery"></stringProp>
+        <boolProp name="keepAlive">true</boolProp>
+        <stringProp name="connectionAge">5000</stringProp>
+        <stringProp name="checkQuery">select 1</stringProp>
+        <stringProp name="dbUrl">${replica_database}</stringProp>
+        <stringProp name="driver">org.postgresql.Driver</stringProp>
+        <stringProp name="username">${replicauser}</stringProp>
+        <stringProp name="password">${replicapassword}</stringProp>
+        <stringProp name="connectionProperties"></stringProp>
+      </JDBCDataSource>
+      <hashTree/>
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Thread Group Write Main Db">
+        <stringProp name="ThreadGroup.num_threads">${main_threads}</stringProp>
+        <intProp name="ThreadGroup.ramp_time">10</intProp>
+        <boolProp name="ThreadGroup.same_user_on_next_iteration">true</boolProp>
+        <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
+        <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" testname="Loop Controller">
+          <stringProp name="LoopController.loops">${main_loops}</stringProp>
+          <boolProp name="LoopController.continue_forever">false</boolProp>
+        </elementProp>
+      </ThreadGroup>
+      <hashTree>
+        <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="WRITE to Main Db">
+          <stringProp name="dataSource">primary_db</stringProp>
+          <stringProp name="query">UPDATE public.products
+SET price = ${__Random(0000,9999)}
+WHERE name = &apos;Product A&apos;;
+
+UPDATE public.products
+SET price = ${__Random(0000,9999)}
+WHERE name = &apos;Product B&apos;;
+
+UPDATE public.products
+SET price = ${__Random(0000,9999)}
+WHERE name = &apos;Product C&apos;;
+
+UPDATE public.products
+SET price = ${__Random(0000,9999)}
+WHERE name = &apos;Product D&apos;;
+
+UPDATE public.products
+SET price = ${__Random(0000,9999)}
+WHERE name = &apos;Product E&apos;;
+</stringProp>
+          <stringProp name="queryArguments"></stringProp>
+          <stringProp name="queryArgumentsTypes"></stringProp>
+          <stringProp name="queryTimeout"></stringProp>
+          <stringProp name="queryType">Update Statement</stringProp>
+          <stringProp name="resultSetHandler">Store as String</stringProp>
+          <stringProp name="resultSetMaxRows"></stringProp>
+          <stringProp name="resultVariable"></stringProp>
+          <stringProp name="variableNames"></stringProp>
+        </JDBCSampler>
+        <hashTree/>
+      </hashTree>
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Thread Group Read ReplicaDb">
+        <stringProp name="ThreadGroup.num_threads">${replica_threads}</stringProp>
+        <intProp name="ThreadGroup.ramp_time">10</intProp>
+        <boolProp name="ThreadGroup.same_user_on_next_iteration">true</boolProp>
+        <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
+        <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" testname="Loop Controller">
+          <stringProp name="LoopController.loops">${replica_loops}</stringProp>
+          <boolProp name="LoopController.continue_forever">false</boolProp>
+        </elementProp>
+      </ThreadGroup>
+      <hashTree>
+        <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="READ from Replica Db">
+          <stringProp name="dataSource">replica_db</stringProp>
+          <stringProp name="queryType">Select Statement</stringProp>
+          <stringProp name="query">SELECT *
+FROM public.products
+ORDER by price DESC
+</stringProp>
+          <stringProp name="queryArguments"></stringProp>
+          <stringProp name="queryArgumentsTypes"></stringProp>
+          <stringProp name="variableNames"></stringProp>
+          <stringProp name="resultVariable"></stringProp>
+          <stringProp name="queryTimeout"></stringProp>
+          <stringProp name="resultSetMaxRows"></stringProp>
+          <stringProp name="resultSetHandler">Store as String</stringProp>
+        </JDBCSampler>
+        <hashTree/>
+      </hashTree>
+    </hashTree>
+  </hashTree>
+</jmeterTestPlan>
